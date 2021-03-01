@@ -1,6 +1,6 @@
-import {ItemList} from './item';
+import { ItemList } from "./item";
 
-import {escapeForHTML} from './helpers';
+import { escapeForHTML } from "./helpers";
 
 export default class Template {
 	/**
@@ -17,14 +17,19 @@ export default class Template {
 	 * })
 	 */
 	itemList(items) {
-		return items.reduce((a, item) => a + `
-<li data-id="${item.id}"${item.completed ? ' class="completed"' : ''}>
+		return items.reduce(
+			(a, item) =>
+				a +
+				`
+<li data-id="${item.id}"${item.completed ? ' class="completed"' : ""}>
 	<div class="view">
-		<input class="toggle" type="checkbox" ${item.completed ? 'checked' : ''}>
+		<input class="toggle" type="checkbox" ${item.completed ? "checked" : ""}>
 		<label>${escapeForHTML(item.title)}</label>
 		<button class="destroy"></button>
 	</div>
-</li>`, '');
+</li>`,
+			""
+		);
 	}
 
 	/**
@@ -35,6 +40,6 @@ export default class Template {
 	 * @returns {!string} Contents for an "items left" indicator
 	 */
 	itemCounter(activeTodos) {
-		return `${activeTodos} item${activeTodos !== 1 ? 's' : ''} left`;
+		return `${activeTodos} item${activeTodos !== 1 ? "s" : ""} left`;
 	}
 }

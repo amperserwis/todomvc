@@ -1,4 +1,4 @@
-import {Item, ItemList, ItemQuery, ItemUpdate, emptyItemQuery} from './item';
+import { Item, ItemList, ItemQuery, ItemUpdate, emptyItemQuery } from "./item";
 
 export default class Store {
 	/**
@@ -22,7 +22,7 @@ export default class Store {
 		 * @returns {ItemList} Current array of todos
 		 */
 		this.getLocalStorage = () => {
-			return liveTodos || JSON.parse(localStorage.getItem(name) || '[]');
+			return liveTodos || JSON.parse(localStorage.getItem(name) || "[]");
 		};
 
 		/**
@@ -31,7 +31,7 @@ export default class Store {
 		 * @param {ItemList} todos Array of todos to write
 		 */
 		this.setLocalStorage = (todos) => {
-			localStorage.setItem(name, JSON.stringify(liveTodos = todos));
+			localStorage.setItem(name, JSON.stringify((liveTodos = todos)));
 		};
 
 		if (callback) {
@@ -54,14 +54,16 @@ export default class Store {
 		const todos = this.getLocalStorage();
 		let k;
 
-		callback(todos.filter(todo => {
-			for (k in query) {
-				if (query[k] !== todo[k]) {
-					return false;
+		callback(
+			todos.filter((todo) => {
+				for (k in query) {
+					if (query[k] !== todo[k]) {
+						return false;
+					}
 				}
-			}
-			return true;
-		}));
+				return true;
+			})
+		);
 	}
 
 	/**
@@ -117,7 +119,7 @@ export default class Store {
 	remove(query, callback) {
 		let k;
 
-		const todos = this.getLocalStorage().filter(todo => {
+		const todos = this.getLocalStorage().filter((todo) => {
 			for (k in query) {
 				if (query[k] !== todo[k]) {
 					return true;
@@ -139,7 +141,7 @@ export default class Store {
 	 * @param {function(number, number, number)} callback Called when the count is completed
 	 */
 	count(callback) {
-		this.find(emptyItemQuery, data => {
+		this.find(emptyItemQuery, (data) => {
 			const total = data.length;
 
 			let i = total;
