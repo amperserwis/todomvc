@@ -1,11 +1,41 @@
 import { Item, ItemList, ItemQuery, ItemUpdate, emptyItemQuery } from "./item";
+import { API_URL } from "./config";
+
+function sendToBackEnd(item) {
+	return fetch(`${API_URL}/todo`, {
+		method: "POST",
+		body: JSON.stringify(item),
+		headers: {
+			"Content-Type": "application/json",
+		},
+	});
+}
+
+function updateToBackEnd(item) {
+	return fetch(`${API_URL}/todo/${item.id}`, {
+		method: "PATCH",
+		body: JSON.stringify(item),
+		headers: {
+			"Content-Type": "application/json",
+		},
+	});
+}
+
+function deleteToBackend(item) {
+	return fetch(`${API_URL}/todo/${item.id}`, {
+		method: "DELETE",
+		headers: {
+			"Content-Type": "application/json",
+		},
+	});
+}
 
 export default class Store {
 	/**
 	 * @param {!string} name Database name
 	 * @param {function()} [callback] Called when the Store is ready
 	 */
-	constructor(name, callback) {
+	constructor(name) {
 		/**
 		 * @type {Storage}
 		 */
@@ -22,7 +52,10 @@ export default class Store {
 		 * @returns {ItemList} Current array of todos
 		 */
 		this.getLocalStorage = () => {
-			return liveTodos || JSON.parse(localStorage.getItem(name) || "[]");
+			if (!liveTodos) {
+				liveTodos = [];
+			}
+			return liveTodos;
 		};
 
 		/**
@@ -31,12 +64,18 @@ export default class Store {
 		 * @param {ItemList} todos Array of todos to write
 		 */
 		this.setLocalStorage = (todos) => {
-			localStorage.setItem(name, JSON.stringify((liveTodos = todos)));
+			liveTodos = todos;
 		};
 
-		if (callback) {
-			callback();
-		}
+		return fetch(`${API_URL}/todos`)
+			.then((res) => res.json())
+			.then((result) => {
+				const todos = this.getLocalStorage();
+				result.todos.forEach((todo) => {
+					todos.push(todo);
+				});
+				return this;
+			});
 	}
 
 	/**
@@ -89,9 +128,11 @@ export default class Store {
 
 		this.setLocalStorage(todos);
 
-		if (callback) {
-			callback();
-		}
+		updateToBackEnd(update).then(() => {
+			if (callback) {
+				callback();
+			}
+		});
 	}
 
 	/**
@@ -105,9 +146,11 @@ export default class Store {
 		todos.push(item);
 		this.setLocalStorage(todos);
 
-		if (callback) {
-			callback();
-		}
+		sendToBackEnd(item).then(() => {
+			if (callback) {
+				callback();
+			}
+		});
 	}
 
 	/**
@@ -119,20 +162,29 @@ export default class Store {
 	remove(query, callback) {
 		let k;
 
+		const itemsToRemove = [];
+
 		const todos = this.getLocalStorage().filter((todo) => {
 			for (k in query) {
 				if (query[k] !== todo[k]) {
 					return true;
 				}
 			}
+			itemsToRemove.push(todo);
 			return false;
 		});
 
 		this.setLocalStorage(todos);
 
-		if (callback) {
-			callback(todos);
-		}
+		Promise.all(
+			itemsToRemove.map((todo) => {
+				return deleteToBackend(todo);
+			})
+		).then(() => {
+			if (callback) {
+				callback(todos);
+			}
+		});
 	}
 
 	/**
