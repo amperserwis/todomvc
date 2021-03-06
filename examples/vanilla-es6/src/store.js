@@ -1,5 +1,18 @@
 import { Item, ItemList, ItemQuery, ItemUpdate, emptyItemQuery } from "./item";
 
+function sendItemToBackEnd(item) {
+	fetch("http://127.0.0.1:8888/todos", {
+		method: "POST",
+		body: JSON.stringify(item),
+		headers: {
+			"Content-type": "application/json",
+		},
+	});
+}
+
+function getItemsFromBackEnd(item) {
+	return fetch("http://127.0.0.1:8888/todos").then((res) => res.json());
+}
 export default class Store {
 	/**
 	 * @param {!string} name Database name
@@ -22,7 +35,10 @@ export default class Store {
 		 * @returns {ItemList} Current array of todos
 		 */
 		this.getLocalStorage = () => {
-			return liveTodos || JSON.parse(localStorage.getItem(name) || "[]");
+			if (!liveTodos) {
+				liveTodos = [];
+			}
+			return liveTodos;
 		};
 
 		/**
@@ -31,12 +47,19 @@ export default class Store {
 		 * @param {ItemList} todos Array of todos to write
 		 */
 		this.setLocalStorage = (todos) => {
-			localStorage.setItem(name, JSON.stringify((liveTodos = todos)));
+			liveTodos = todos;
 		};
 
-		if (callback) {
-			callback();
-		}
+		getItemsFromBackEnd().then(({ todoList }) => {
+			const s = this.getLocalStorage();
+			todoList.forEach((todoItem) => {
+				s.push(todoItem);
+			});
+
+			if (callback) {
+				callback();
+			}
+		});
 	}
 
 	/**
@@ -104,6 +127,8 @@ export default class Store {
 		const todos = this.getLocalStorage();
 		todos.push(item);
 		this.setLocalStorage(todos);
+
+		sendItemToBackEnd(item);
 
 		if (callback) {
 			callback();
