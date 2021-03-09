@@ -22,6 +22,7 @@ export default class View {
 		this.$main = qs(".main");
 		this.$toggleAll = qs(".toggle-all");
 		this.$newTodo = qs(".new-todo");
+		this.$loader = qs(".loader");
 		$delegate(this.$todoList, "li label", "dblclick", ({ target }) => {
 			this.editItem(target);
 		});
@@ -101,6 +102,10 @@ export default class View {
 	 */
 	setCompleteAllCheckbox(checked) {
 		this.$toggleAll.checked = !!checked;
+	}
+
+	setLoaderVisiblity(visible) {
+		this.$loader.style.display = !!visible ? "flex" : "none";
 	}
 
 	/**

@@ -4,6 +4,23 @@
 		<meta charset="utf-8" />
 		<title>Vanilla ES6 • TodoMVC</title>
 		<link rel="stylesheet" href="node_modules/todomvc-app-css/index.css" />
+		<style>
+			.loader {
+				position: absolute;
+				top: 20px;
+				right: 10px;
+				width: 100%;
+				height: 100%;
+				z-index: 2;
+				display: flex;
+				justify-content: flex-end;
+			}
+
+			.loader img {
+				width: 20px;
+				height: 20px;
+			}
+		</style>
 	</head>
 	<body>
 		<section class="todoapp">
@@ -35,6 +52,10 @@
 					<button class="clear-completed">Clear completed</button>
 				</footer>
 			</section>
+
+			<div class="loader">
+				<img src="assets/loader.svg" />
+			</div>
 		</section>
 		<footer class="info">
 			<p>Double-click to edit a todo</p>

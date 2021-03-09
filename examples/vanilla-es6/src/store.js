@@ -1,7 +1,7 @@
 import { Item, ItemList, ItemQuery, ItemUpdate, emptyItemQuery } from "./item";
 
 function sendItemToBackEnd(item) {
-	fetch("http://127.0.0.1:8888/todos", {
+	return fetch("http://127.0.0.1:8888/todos", {
 		method: "POST",
 		body: JSON.stringify(item),
 		headers: {
@@ -10,9 +10,26 @@ function sendItemToBackEnd(item) {
 	});
 }
 
-function getItemsFromBackEnd(item) {
+function getItemsFromBackEnd() {
 	return fetch("http://127.0.0.1:8888/todos").then((res) => res.json());
 }
+
+function removeItemFromBackEnd(item) {
+	return fetch(`http://127.0.0.1:8888/todos/${item.id}`, {
+		method: "DELETE",
+	});
+}
+
+function updateItemInBackend(changes) {
+	return fetch(`http://127.0.0.1:8888/todos/${changes.id}`, {
+		method: "PATCH",
+		body: JSON.stringify(changes),
+		headers: {
+			"Content-type": "application/json",
+		},
+	});
+}
+
 export default class Store {
 	/**
 	 * @param {!string} name Database name
@@ -112,9 +129,11 @@ export default class Store {
 
 		this.setLocalStorage(todos);
 
-		if (callback) {
-			callback();
-		}
+		updateItemInBackend(update).then(() => {
+			if (callback) {
+				callback();
+			}
+		});
 	}
 
 	/**
@@ -128,11 +147,11 @@ export default class Store {
 		todos.push(item);
 		this.setLocalStorage(todos);
 
-		sendItemToBackEnd(item);
-
-		if (callback) {
-			callback();
-		}
+		sendItemToBackEnd(item).then(() => {
+			if (callback) {
+				callback();
+			}
+		});
 	}
 
 	/**
@@ -155,9 +174,11 @@ export default class Store {
 
 		this.setLocalStorage(todos);
 
-		if (callback) {
-			callback(todos);
-		}
+		removeItemFromBackEnd(query).then(() => {
+			if (callback) {
+				callback(todos);
+			}
+		});
 	}
 
 	/**
