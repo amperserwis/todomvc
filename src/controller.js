@@ -44,6 +44,7 @@ export default class Controller {
 	 * @param {!string} title Title of the new item
 	 */
 	addItem(title) {
+		this.view.setLoaderVisibility(true);
 		this.store.insert(
 			{
 				id: Date.now(),
@@ -53,6 +54,7 @@ export default class Controller {
 			() => {
 				this.view.clearNewTodo();
 				this._filter(true);
+				this.view.setLoaderVisibility(false);
 			}
 		);
 	}
@@ -64,9 +66,11 @@ export default class Controller {
 	 * @param {!string} title New title for the Item in edit
 	 */
 	editItemSave(id, title) {
+		this.view.setLoaderVisibility(true);
 		if (title.length) {
 			this.store.update({ id, title }, () => {
 				this.view.editItemDone(id, title);
+				this.view.setLoaderVisibility(false);
 			});
 		} else {
 			this.removeItem(id);
@@ -91,9 +95,11 @@ export default class Controller {
 	 * @param {!number} id Item ID of item to remove
 	 */
 	removeItem(id) {
+		this.view.setLoaderVisibility(true);
 		this.store.remove({ id }, () => {
 			this._filter();
 			this.view.removeItem(id);
+			this.view.setLoaderVisibility(false);
 		});
 	}
 
@@ -101,7 +107,11 @@ export default class Controller {
 	 * Remove all completed items.
 	 */
 	removeCompletedItems() {
-		this.store.remove({ completed: true }, this._filter.bind(this));
+		this.view.setLoaderVisibility(true);
+		this.store.remove({ completed: true }, () => {
+			this._filter();
+			this.view.setLoaderVisibility(false);
+		});
 	}
 
 	/**

@@ -1,7 +1,7 @@
 import { Item, ItemList, ItemQuery, ItemUpdate, emptyItemQuery } from "./item";
 
 function sendItemToBackEnd(item) {
-	fetch("http://127.0.0.1:8888/todos", {
+	return fetch(`${API_URL}/todos`, {
 		method: "POST",
 		body: JSON.stringify(item),
 		headers: {
@@ -10,8 +10,24 @@ function sendItemToBackEnd(item) {
 	});
 }
 
-function getItemsFromBackEnd(item) {
-	return fetch("http://127.0.0.1:8888/todos").then((res) => res.json());
+function getItemsFromBackEnd() {
+	return fetch(`${API_URL}/todos`).then((res) => res.json());
+}
+
+function deleteItemFromBackEnd(item) {
+	return fetch(`${API_URL}/todos/${item.id}`, {
+		method: "DELETE",
+	});
+}
+
+function patchItemToBackEnd(update) {
+	return fetch(`${API_URL}/todos/${update.id}`, {
+		method: "PATCH",
+		body: JSON.stringify(update),
+		headers: {
+			"Content-type": "application/json",
+		},
+	});
 }
 export default class Store {
 	/**
@@ -112,9 +128,11 @@ export default class Store {
 
 		this.setLocalStorage(todos);
 
-		if (callback) {
-			callback();
-		}
+		patchItemToBackEnd(update).then(() => {
+			if (callback) {
+				callback();
+			}
+		});
 	}
 
 	/**
@@ -128,11 +146,11 @@ export default class Store {
 		todos.push(item);
 		this.setLocalStorage(todos);
 
-		sendItemToBackEnd(item);
-
-		if (callback) {
-			callback();
-		}
+		sendItemToBackEnd(item).then(() => {
+			if (callback) {
+				callback();
+			}
+		});
 	}
 
 	/**
@@ -144,20 +162,26 @@ export default class Store {
 	remove(query, callback) {
 		let k;
 
+		const promises = [];
+
 		const todos = this.getLocalStorage().filter((todo) => {
 			for (k in query) {
 				if (query[k] !== todo[k]) {
 					return true;
 				}
 			}
+
+			promises.push(deleteItemFromBackEnd(todo));
 			return false;
 		});
 
 		this.setLocalStorage(todos);
 
-		if (callback) {
-			callback(todos);
-		}
+		Promise.all(promises).then(() => {
+			if (callback) {
+				callback(todos);
+			}
+		});
 	}
 
 	/**
