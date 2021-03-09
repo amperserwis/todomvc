@@ -12,7 +12,7 @@ const outputDir = {
 };
 
 const apiUrls = {
-	production: "https://todo-backend-tutorial.herokuapp.com/",
+	production: "https://todo-backend-tutorial.herokuapp.com",
 	development: "http://127.0.0.1:8888",
 };
 
